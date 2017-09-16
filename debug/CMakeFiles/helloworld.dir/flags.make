@@ -6,5 +6,5 @@ CXX_FLAGS =  -std=c++11 -g
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/j/Desktop/pong/include 
+CXX_INCLUDES = -I/home/jonathan/Desktop/pong/include 
 
