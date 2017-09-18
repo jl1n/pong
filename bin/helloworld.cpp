@@ -1,7 +1,6 @@
 #include <SFML/Graphics.hpp>
 //#include <iostream>
 #include <SFML/Audio.hpp>
-#include <SFML/System.hpp>
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
@@ -23,7 +22,7 @@ sf::Font font;
 const sf::Time AITime   = sf::seconds(0.4f);
 const float paddleSpeed = 10.f;
 float rightPaddleSpeed  = 0.f;
-const float ballSpeed   = 10.f;
+const float ballSpeed   = 8.f;
     float ballAngle         = 0.f; // to be changed later
 
     struct Paddle {
@@ -44,21 +43,30 @@ const float ballSpeed   = 10.f;
         //sf::sleep(sf::seconds(5));
         ball.setPosition(windowWidth / 2, windowHeight / 2);
 
+        int flip = 0;
+
+        if(std::rand()%2==1)
+            flip = 180;
+        else
+            flip = 0;
+
+         ballAngle = (flip + (std::rand() % 45) - 45);
+         //ballAngle = 210;
                     // Reset the ball angle
-        do
+        /*do
         {
                         // Make sure the ball initial angle is not too much vertical
-            ballAngle = (std::rand() % 360) * 2 * pi / 360;
+            //ballAngle = (std::rand() % 360) * 2 * pi / 360;
+           
+
         }
-        while (std::abs(std::cos(ballAngle)) < 0.7f);
+        while (std::abs(std::cos(ballAngle)) < 0.7f);*/
     }
 
     int main()
     {
 
         std::srand(std::time(0));
-
-
 
     // Create the window of the application
         sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight, 32), "Pong",
@@ -150,13 +158,13 @@ const float ballSpeed   = 10.f;
             // Window closed or escape key pressed: exit
                 if(event.key.code == sf::Keyboard::Escape)
                 {
-                   window.close();
-                   break;
-               }
+                 window.close();
+                 break;
+             }
 
             // Space key pressed: play
-               else if ((event.key.code == sf::Keyboard::Return))
-               {
+             else if ((event.key.code == sf::Keyboard::Return))
+             {
 
                 if(mode == start || mode == finish)
                 {
@@ -226,21 +234,21 @@ const float ballSpeed   = 10.f;
 
             // Move the player's paddle
         if (Up == true &&
-         (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
+           (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
         {
-                leftPaddle.move(0.f, -paddleSpeed/* * deltaTime*/);
+                leftPaddle.move(0.f, -paddleSpeed);
         }
         if (Down == true &&
-         (leftPaddle.getPosition().y + paddleSize.y / 2 < windowHeight - 5.f))
+           (leftPaddle.getPosition().y + paddleSize.y / 2 < windowHeight - 5.f))
         {
-                leftPaddle.move(0.f, paddleSpeed/* * deltaTime*/);
+                leftPaddle.move(0.f, paddleSpeed);
         }
 
             // Move the computer's paddle
         if (((rightPaddleSpeed < 0.f) && (rightPaddle.getPosition().y - paddleSize.y / 2 > 5.f)) ||
             ((rightPaddleSpeed > 0.f) && (rightPaddle.getPosition().y + paddleSize.y / 2 < windowHeight - 5.f)))
         {
-                rightPaddle.move(0.f, rightPaddleSpeed/* * deltaTime*/);
+                rightPaddle.move(0.f, rightPaddleSpeed);
         }
 
             // Update the computer's paddle direction according to the ball position
@@ -257,7 +265,7 @@ const float ballSpeed   = 10.f;
 
             // Move the ball
             float factor = ballSpeed /** deltaTime*/;
-        ball.move(std::cos(ballAngle) * factor, std::sin(ballAngle) * factor);
+        ball.move(std::cos(ballAngle * pi/180) * factor, std::sin(ballAngle * pi/180) * factor);
 
             // Check collisions between the ball and the screen
         if (ball.getPosition().x - ballRadius < 0.f)
@@ -307,30 +315,29 @@ const float ballSpeed   = 10.f;
             //ball.setPosition(ball.getPosition().x, windowHeight - ballRadius - 0.1f);
         }
 
-            // Check the collisions between the ball and the paddles
-            // Left Paddle
-        /*if (ball.getPosition().x - ballRadius < leftPaddle.getPosition().x + paddleSize.x / 2 &&
-            ball.getPosition().x - ballRadius > leftPaddle.getPosition().x &&
-            ball.getPosition().y + ballRadius >= leftPaddle.getPosition().y - paddleSize.y / 2 &&
-            ball.getPosition().y - ballRadius <= leftPaddle.getPosition().y + paddleSize.y / 2)*/
         if(ball.getGlobalBounds().intersects(leftPaddle.getGlobalBounds()))
         {
-            if (ball.getPosition().y > leftPaddle.getPosition().y)
+            ballAngle = 180 - ballAngle - 10 + std::rand() % 10;
+            //ballAngle = 180 -ballAngle - 10.f + std::rand() % 10;
+            /*if (ball.getPosition().y > leftPaddle.getPosition().y)
                 ballAngle = pi - ballAngle + (std::rand() % 20) * pi / 180;
+                
             else
-                ballAngle = pi - ballAngle - (std::rand() % 20) * pi / 180;
+                ballAngle = pi - ballAngle - (std::rand() % 20) * pi / 180;*/
 
                 //ballSound.play();
             ball.setPosition(leftPaddle.getPosition().x + ballRadius + paddleSize.x / 2 + 0.1f, ball.getPosition().y);
         }
 
             // Right Paddle
-                if(ball.getGlobalBounds().intersects(rightPaddle.getGlobalBounds()))
+        if(ball.getGlobalBounds().intersects(rightPaddle.getGlobalBounds()))
         {
+            ballAngle = 180 - ballAngle - 10 + std::rand() % 10;
+        /*
             if (ball.getPosition().y > rightPaddle.getPosition().y)
                 ballAngle = pi - ballAngle + (std::rand() % 20) * pi / 180;
             else
-                ballAngle = pi - ballAngle - (std::rand() % 20) * pi / 180;
+                ballAngle = pi - ballAngle - (std::rand() % 20) * pi / 180;*/
 
                 //ballSound.play();
             ball.setPosition(rightPaddle.getPosition().x - ballRadius - paddleSize.x / 2 - 0.1f, ball.getPosition().y);
@@ -340,7 +347,7 @@ const float ballSpeed   = 10.f;
         // Clear the window
         window.clear(/*sf::Color(50, 200, 50)*/);
 
-        if (/*isPlaying*/ mode == playing)
+    if (mode == playing)
     {
             // Draw the paddles and the ball
         window.draw(leftPaddle);
@@ -350,18 +357,18 @@ const float ballSpeed   = 10.f;
     }
     else if(mode == start)
     {
-            // Draw the pause message
         window.draw(startText);
     }
 
     else if(mode == finish)
     {
-            // Draw the pause message
+        window.draw(leftPaddle);
+        window.draw(rightPaddle);
+        //window.draw(ball);
+        window.draw(score);
         window.draw(finishText);
     }
 
-
-        // Display things on screen
     window.display();
 }
 
