@@ -31,7 +31,7 @@ int main()
         sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
     window.setKeyRepeatEnabled(false);
-
+    window.setFramerateLimit(60);
 
     // Load the sounds used in the game
     /*sf::SoundBuffer ballSoundBuffer;
@@ -88,9 +88,9 @@ int main()
     // Define the paddles properties
     sf::Clock AITimer;
     const sf::Time AITime   = sf::seconds(0.4f);
-    const float paddleSpeed = 1.f;
+    const float paddleSpeed = 10.f;
     float rightPaddleSpeed  = 0.f;
-    const float ballSpeed   = 1.f;
+    const float ballSpeed   = 10.f;
     float ballAngle         = 0.f; // to be changed later
 
     sf::Clock clock;
@@ -98,8 +98,8 @@ int main()
     mode = start;
     int leftScore = 0;
     int rightScore = 0;
-    bool Right = false;
-    bool Left = false;
+    bool Up = false;
+    bool Down = false;
 
 
     while (window.isOpen())
@@ -148,23 +148,23 @@ int main()
                 }
             }
 
-               else if (event.key.code == Keyboard::D) {
-                    Right = true;
+               else if (event.key.code == Keyboard::Up) {
+                    Up = true;
                     break;
                 }
 
-                  else if (event.key.code == Keyboard::A) {
-                    Left = true;
+                  else if (event.key.code == Keyboard::Down) {
+                    Down = true;
                     break;
                 }
 
             }
             else if(event.type == sf::Event::KeyReleased) {
-                if (event.key.code == Keyboard::A)
-                    Left = false;
+                if (event.key.code == Keyboard::Up)
+                    Up = false;
  
-                else if (event.key.code == Keyboard::D)
-                    Right = false;
+                else if (event.key.code == Keyboard::Down)
+                    Down = false;
             }
 
 
@@ -188,12 +188,12 @@ int main()
             //float deltaTime = clock.restart().asSeconds();
 
             // Move the player's paddle
-            if (Left == true &&
+            if (Up == true &&
              (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
             {
                 leftPaddle.move(0.f, -paddleSpeed/* * deltaTime*/);
             }
-            if (Right == true &&
+            if (Down == true &&
              (leftPaddle.getPosition().y + paddleSize.y / 2 < gameHeight - 5.f))
             {
                 leftPaddle.move(0.f, paddleSpeed/* * deltaTime*/);
