@@ -28,7 +28,7 @@ int main()
     Mode mode = start;
 
     // Create the window of the application
-    sf::RenderWindow window(sf::VideoMode(gameWidth, gameHeight, 32), "SFML Pong",
+    sf::RenderWindow window(sf::VideoMode(gameWidth, gameHeight, 32), "Pong",
                             sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
@@ -42,7 +42,7 @@ int main()
     sf::RectangleShape leftPaddle;
     leftPaddle.setSize(paddleSize - sf::Vector2f(3, 3));
     leftPaddle.setOutlineThickness(3);
-    leftPaddle.setOutlineColor(sf::Color::Black);
+    //leftPaddle.setOutlineColor(sf::Color::Green);
     leftPaddle.setFillColor(sf::Color(100, 100, 200));
     leftPaddle.setOrigin(paddleSize / 2.f);
 
@@ -50,7 +50,7 @@ int main()
     sf::RectangleShape rightPaddle;
     rightPaddle.setSize(paddleSize - sf::Vector2f(3, 3));
     rightPaddle.setOutlineThickness(3);
-    rightPaddle.setOutlineColor(sf::Color::Black);
+    //rightPaddle.setOutlineColor(sf::Color::Black);
     rightPaddle.setFillColor(sf::Color(200, 100, 100));
     rightPaddle.setOrigin(paddleSize / 2.f);
 
@@ -64,20 +64,29 @@ int main()
 
     // Load the text font
     sf::Font font;
-    if (!font.loadFromFile("../res/CartoonBlocks.ttf"))
+    if (!font.loadFromFile("../res/ChocolateCoveredRaindrops.ttf"))
         return EXIT_FAILURE;
 
     // Initialize the pause message
-    sf::Text pauseMessage;
-    pauseMessage.setFont(font);
-    pauseMessage.setCharacterSize(40);
-    pauseMessage.setPosition(170.f, 150.f);
-    pauseMessage.setColor(sf::Color::Green);
-    pauseMessage.setString("Welcome to SFML pong!\nPress space to start the game");
+    sf::Text startMessage;
+    startMessage.setFont(font);
+    startMessage.setCharacterSize(40);
+    startMessage.setColor(sf::Color::White);
+    startMessage.setString("Welcome to pong!\nPress space to start the game");
+    startMessage.setPosition(gameWidth/2.f, gameHeight/2.f);
+    startMessage.setOrigin(startMessage.getLocalBounds().width/2.0f,startMessage.getLocalBounds().height/2.0f);
+
+     sf::Text score;
+    score.setFont(font);
+    score.setCharacterSize(60);
+    score.setColor(sf::Color::White);
+    score.setString("0 - 0");
+    score.setPosition(gameWidth/2.f, 0);
+    score.setOrigin(score.getLocalBounds().width/2.0f,score.getLocalBounds().height/2.0f);
 
     // Define the paddles properties
     sf::Clock AITimer;
-    const sf::Time AITime   = sf::seconds(0.7f);
+    const sf::Time AITime   = sf::seconds(0.4f);
     const float paddleSpeed = 400.f;
     float rightPaddleSpeed  = 0.f;
     const float ballSpeed   = 400.f;
@@ -86,6 +95,9 @@ int main()
     sf::Clock clock;
     //bool isPlaying = false;
     mode = start;
+    int leftScore = 0;
+    int rightScore = 0;
+
     while (window.isOpen())
     {
         // Handle events
@@ -101,9 +113,10 @@ int main()
             }
 
             // Space key pressed: play
-            if (/*(event.type == sf::Event::KeyPressed) &&*/ (event.key.code == sf::Keyboard::Space))
+            if (/*(event.type == sf::Event::KeyPressed) &&*/ (mode!=playing) && (event.key.code == sf::Keyboard::Space))
             {
-                if (mode!=playing)
+
+                if(mode == start)
                 {
                     // (re)start the game
                     //isPlaying = true;
@@ -122,8 +135,12 @@ int main()
                         ballAngle = (std::rand() % 360) * 2 * pi / 360;
                     }
                     while (std::abs(std::cos(ballAngle)) < 0.7f);
-                }
             }
+
+            if(mode == finish) {
+
+            }
+        }
         }
 
         if (mode == playing)
@@ -169,14 +186,18 @@ int main()
             if (ball.getPosition().x - ballRadius < 0.f)
             {
                 //isPlaying = false;
-                mode = start;
-                pauseMessage.setString("You lost!\nPress space to restart or\nescape to exit");
+                //mode = start;
+                startMessage.setString("You lost!\nPress space to restart or\nescape to exit");
+                ball.setPosition(gameWidth/2.f - ballRadius, gameHeight/2.f - ballRadius);
+                ballAngle = (std::rand() % 60) + 60;
             }
             if (ball.getPosition().x + ballRadius > gameWidth)
             {
                 //isPlaying = false;
-                mode = start;
-                pauseMessage.setString("You won!\nPress space to restart or\nescape to exit");
+                //mode = start;
+                startMessage.setString("You won!\nPress space to restart or\nescape to exit");
+                ball.setPosition(gameWidth/2.f - ballRadius, gameHeight/2.f - ballRadius);
+                ballAngle = std::rand() % 60 + 60;
             }
             if (ball.getPosition().y - ballRadius < 0.f)
             {
@@ -232,17 +253,18 @@ int main()
             window.draw(leftPaddle);
             window.draw(rightPaddle);
             window.draw(ball);
+            window.draw(score);
         }
         else if(mode == start)
         {
             // Draw the pause message
-            window.draw(pauseMessage);
+            window.draw(startMessage);
         }
 
         else if(mode == finish)
         {
             // Draw the pause message
-            window.draw(pauseMessage);
+            window.draw(startMessage);
         }
 
 
