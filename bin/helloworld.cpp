@@ -9,16 +9,7 @@
 using namespace sf;
 using namespace std;
 
-sf::RectangleShape createPaddle() {
-    sf::RectangleShape paddle;
-    return paddle;
-}
-
-int main()
-{
-    std::srand(std::time(0));
-
-    // Define some constants
+ // Define some constants
     const float pi = 3.14159f;
     const int gameWidth = 800;
     const int gameHeight = 600;
@@ -28,11 +19,18 @@ int main()
     Mode mode = start;
     sf::Font font;
 
+int main()
+{
+
+    std::srand(std::time(0));
+
+   
+
     // Create the window of the application
     sf::RenderWindow window(sf::VideoMode(gameWidth, gameHeight, 32), "Pong",
         sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
-            window.setKeyRepeatEnabled(false);
+    window.setKeyRepeatEnabled(false);
 
 
     // Load the sounds used in the game
@@ -90,9 +88,9 @@ int main()
     // Define the paddles properties
     sf::Clock AITimer;
     const sf::Time AITime   = sf::seconds(0.4f);
-    const float paddleSpeed = 500.f;
+    const float paddleSpeed = 1.f;
     float rightPaddleSpeed  = 0.f;
-    const float ballSpeed   = 500.f;
+    const float ballSpeed   = 1.f;
     float ballAngle         = 0.f; // to be changed later
 
     sf::Clock clock;
@@ -112,7 +110,7 @@ int main()
         {
             // Window closed or escape key pressed: exit
             if ((event.type == sf::Event::Closed) ||
-               ((event.key.code == sf::Keyboard::Escape)))
+             ((event.key.code == sf::Keyboard::Escape)))
             {
                 window.close();
                 break;
@@ -166,25 +164,25 @@ int main()
 
         if (mode == playing)
         {
-            float deltaTime = clock.restart().asSeconds();
+            //float deltaTime = clock.restart().asSeconds();
 
             // Move the player's paddle
             if (Keyboard::isKeyPressed(sf::Keyboard::Up) &&
-               (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
+             (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
             {
-                leftPaddle.move(0.f, -paddleSpeed * deltaTime);
+                leftPaddle.move(0.f, -paddleSpeed/* * deltaTime*/);
             }
             if (Keyboard::isKeyPressed(sf::Keyboard::Down) &&
-               (leftPaddle.getPosition().y + paddleSize.y / 2 < gameHeight - 5.f))
+             (leftPaddle.getPosition().y + paddleSize.y / 2 < gameHeight - 5.f))
             {
-                leftPaddle.move(0.f, paddleSpeed * deltaTime);
+                leftPaddle.move(0.f, paddleSpeed/* * deltaTime*/);
             }
 
             // Move the computer's paddle
             if (((rightPaddleSpeed < 0.f) && (rightPaddle.getPosition().y - paddleSize.y / 2 > 5.f)) ||
                 ((rightPaddleSpeed > 0.f) && (rightPaddle.getPosition().y + paddleSize.y / 2 < gameHeight - 5.f)))
             {
-                rightPaddle.move(0.f, rightPaddleSpeed * deltaTime);
+                rightPaddle.move(0.f, rightPaddleSpeed/* * deltaTime*/);
             }
 
             // Update the computer's paddle direction according to the ball position
@@ -200,7 +198,7 @@ int main()
             }
 
             // Move the ball
-            float factor = ballSpeed * deltaTime;
+            float factor = ballSpeed /** deltaTime*/;
             ball.move(std::cos(ballAngle) * factor, std::sin(ballAngle) * factor);
 
             // Check collisions between the ball and the screen
@@ -211,11 +209,11 @@ int main()
                 //startText.setString("You lost!\nPress space to restart or\nescape to exit");
                 ball.setPosition(gameWidth/2.f - ballRadius, gameHeight/2.f - ballRadius);
                 do
-                    {
+                {
                         // Make sure the ball initial angle is not too much vertical
-                        ballAngle = (std::rand() % 360) * 2 * pi / 360;
-                    }
-                    while (std::abs(std::cos(ballAngle)) < 0.7f);
+                    ballAngle = (std::rand() % 360) * 2 * pi / 360;
+                }
+                while (std::abs(std::cos(ballAngle)) < 0.7f);
                 rightScore++;
                 score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
 
@@ -230,11 +228,11 @@ int main()
                 //startText.setString("You won!\nPress space to restart or\nescape to exit");
                 ball.setPosition(gameWidth/2.f - ballRadius, gameHeight/2.f - ballRadius);
                 do
-                    {
+                {
                         // Make sure the ball initial angle is not too much vertical
-                        ballAngle = (std::rand() % 360) * 2 * pi / 360;
-                    }
-                    while (std::abs(std::cos(ballAngle)) < 0.7f);
+                    ballAngle = (std::rand() % 360) * 2 * pi / 360;
+                }
+                while (std::abs(std::cos(ballAngle)) < 0.7f);
                 leftScore++;
                 score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
                 if(leftScore > 1)
