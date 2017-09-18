@@ -26,7 +26,7 @@ int rightScore = 0;
 bool Up = false;
 bool Down = false;
 
-    // unused. Didn't seem necessary.
+    // Attempted oo approach.
 struct Paddle {
 public:
     sf::RectangleShape rect;
@@ -88,7 +88,7 @@ int main()
     startText.setFont(font);
     startText.setCharacterSize(40);
     startText.setColor(sf::Color::White);
-    startText.setString("Pong!\nPress ENTER to start.\nType 1-3 for Difficulty\nEsc to exit");
+    startText.setString("Pong!\nPress ENTER to start.\nType 1-3 to set Difficulty\nEsc to exit");
     startText.setPosition(windowWidth/2.f, windowHeight/2.f - 20);
     startText.setOrigin(startText.getLocalBounds().width/2.0f,startText.getLocalBounds().height/2.0f);
 
@@ -120,6 +120,13 @@ int main()
     ball.setFillColor(sf::Color::White);
     ball.setOrigin(ballRadius / 2, ballRadius / 2);
 
+        // ball
+    sf::CircleShape power;
+    power.setRadius(ballRadius * 5);
+    power.setFillColor(sf::Color::Green);
+    power.setOrigin(ballRadius * 5/2, ballRadius * 5/2);
+    bool powerPresent = true;
+
         // Difficulty Button
     sf::RectangleShape difficultyRect(sf::Vector2f(50, 50));
     difficultyRect.setFillColor(sf::Color::White);
@@ -134,7 +141,6 @@ int main()
 
     while (window.isOpen())
     {
-        // Handle events
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -142,11 +148,10 @@ int main()
           switch (event.type) {
 
             case sf::Event::Closed:
-                window.close();
-                break;
+            window.close();
+            break;
 
             case sf::Event::KeyPressed:
-            // Window closed or escape key pressed: exit
             if(event.key.code == sf::Keyboard::Escape)
             {
              window.close();
@@ -164,8 +169,16 @@ int main()
                 leftScore = 0;
                 rightScore = 0;
                 score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
+                powerPresent = true;
+                power.setPosition(windowWidth/4 + std::rand() % windowWidth/2, windowHeight/4 + std::rand() % windowHeight/2);
+
 
                     // Reset shapes
+                leftPaddle.setSize(paddleSize);
+                rightPaddle.setSize(paddleSize);
+                leftPaddle.setFillColor(sf::Color::Cyan);
+                rightPaddle.setFillColor(sf::Color::Magenta);
+
                 leftPaddle.setPosition(paddleSize.x, windowHeight / 2);
                 rightPaddle.setPosition(windowWidth - paddleSize.x, windowHeight / 2);
                 resetBall(ball);
@@ -227,12 +240,12 @@ if (mode == playing)
     }
 
     // Move AI paddle
-    if ((rightPaddle.getPosition().y - paddleSize.y / 2 > 5.f) && (ball.getPosition().y + (std::rand() % 10 - 20) - ballRadius < rightPaddle.getPosition().y - paddleSize.y / 2))
+    if ((rightPaddle.getPosition().y - paddleSize.y / 2 > 5.f) && (ball.getPosition().y - (std::rand() % 50) - ballRadius < rightPaddle.getPosition().y - paddleSize.y / 2))
     {
-        rightPaddle.move(0.f, -paddleSpeed/2);
+        rightPaddle.move(0.f, -paddleSpeed);
     }
-    else if((rightPaddle.getPosition().y + paddleSize.y / 2 < windowHeight - 5.f) && (ball.getPosition().y + (std::rand() % 10 - 20) + ballRadius > rightPaddle.getPosition().y + paddleSize.y / 2))
-        rightPaddle.move(0.f, paddleSpeed/2);
+    if((rightPaddle.getPosition().y + paddleSize.y / 2 < windowHeight - 5.f) && (ball.getPosition().y - (std::rand() % 50) + ballRadius > rightPaddle.getPosition().y + paddleSize.y / 2))
+        rightPaddle.move(0.f, paddleSpeed);
 
     // Move ball
     ball.move(std::cos(ballAngle * 3.14159f/180) * ballSpeed, std::sin(ballAngle * 3.14159f/180) * ballSpeed);
@@ -244,7 +257,7 @@ if (mode == playing)
         rightScore++;
         score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
 
-        if(rightScore > 1) {
+        if(rightScore > 10) {
             mode = finish;
             finishText.setString("Computer Wins!\nPress ENTER to play again.\nEsc to quit.");
 
@@ -256,7 +269,7 @@ if (mode == playing)
         resetBall(ball);
         leftScore++;
         score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
-        if(leftScore > 1) {
+        if(leftScore > 10) {
             mode = finish;
             finishText.setString("Player Wins!\nPress ENTER to play again.\nEsc to quit.");
         }
@@ -284,6 +297,15 @@ if (mode == playing)
 
     }
 
+    if(ball.getGlobalBounds().intersects(power.getGlobalBounds()) && powerPresent)
+    {
+        powerPresent = false;
+        if(270>ballAngle && ballAngle>90)
+            rightPaddle.setFillColor(sf::Color::Yellow);
+        else
+            leftPaddle.setFillColor(sf::Color::Yellow);
+    }
+
 }
 
 window.clear();
@@ -300,6 +322,8 @@ else if (mode == playing)
     window.draw(rightPaddle);
     window.draw(ball);
     window.draw(score);
+    if(powerPresent)
+        window.draw(power);
 }
 
 else if(mode == finish)
