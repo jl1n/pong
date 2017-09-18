@@ -270,10 +270,18 @@ if (mode == playing)
         ballAngle = -ballAngle;
     }
 
-    if(ball.getGlobalBounds().intersects(leftPaddle.getGlobalBounds()) || ball.getGlobalBounds().intersects(rightPaddle.getGlobalBounds()))
+    if(ball.getGlobalBounds().intersects(leftPaddle.getGlobalBounds()))
     {
         ballAngle = 180 - ballAngle - 15 + std::rand() % 30;
         ballSound.play();
+        ball.setPosition(leftPaddle.getPosition().x + ballRadius + paddleSize.x / 2 + 1.f, ball.getPosition().y);
+
+    }
+    if(ball.getGlobalBounds().intersects(rightPaddle.getGlobalBounds())) {
+        ballAngle = 180 - ballAngle - 15 + std::rand() % 30;
+        ballSound.play();
+        ball.setPosition(rightPaddle.getPosition().x - ballRadius - paddleSize.x / 2 - 1.f, ball.getPosition().y);
+
     }
 
 }
