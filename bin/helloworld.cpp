@@ -98,8 +98,8 @@ int main()
     mode = start;
     int leftScore = 0;
     int rightScore = 0;
-
-
+    bool Right = false;
+    bool Left = false;
 
 
     while (window.isOpen())
@@ -108,6 +108,8 @@ int main()
         sf::Event event;
         while (window.pollEvent(event))
         {
+
+            if(event.type == sf::Event::KeyPressed) {
             // Window closed or escape key pressed: exit
             if ((event.type == sf::Event::Closed) ||
              ((event.key.code == sf::Keyboard::Escape)))
@@ -146,6 +148,25 @@ int main()
                 }
             }
 
+               else if (event.key.code == Keyboard::D) {
+                    Right = true;
+                    break;
+                }
+
+                  else if (event.key.code == Keyboard::A) {
+                    Left = true;
+                    break;
+                }
+
+            }
+            else if(event.type == sf::Event::KeyReleased) {
+                if (event.key.code == Keyboard::A)
+                    Left = false;
+ 
+                else if (event.key.code == Keyboard::D)
+                    Right = false;
+            }
+
 
         }
 
@@ -167,12 +188,12 @@ int main()
             //float deltaTime = clock.restart().asSeconds();
 
             // Move the player's paddle
-            if (Keyboard::isKeyPressed(sf::Keyboard::Up) &&
+            if (Left == true &&
              (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
             {
                 leftPaddle.move(0.f, -paddleSpeed/* * deltaTime*/);
             }
-            if (Keyboard::isKeyPressed(sf::Keyboard::Down) &&
+            if (Right == true &&
              (leftPaddle.getPosition().y + paddleSize.y / 2 < gameHeight - 5.f))
             {
                 leftPaddle.move(0.f, paddleSpeed/* * deltaTime*/);
