@@ -1,5 +1,4 @@
 #include <SFML/Graphics.hpp>
-//#include <iostream>
 #include <SFML/Audio.hpp>
 #include <cmath>
 #include <ctime>
@@ -9,350 +8,302 @@
 using namespace sf;
 using namespace std;
 
- // Define some constants
-const float pi = 3.14159f;
 const int windowWidth = 800;
 const int windowHeight = 600;
+
 sf::Vector2f paddleSize(25, 100);
 float ballRadius = 8.f;
 enum Mode { start, playing, finish };
 Mode mode = start;
 sf::Font font;
 
-const sf::Time AITime   = sf::seconds(0.4f);
-const float paddleSpeed = 10.f;
-float rightPaddleSpeed  = 0.f;
-const float ballSpeed   = 8.f;
-    float ballAngle     = 0; // to be changed later
+float paddleSpeed = 12.f;
+float ballSpeed   = 8.f;
+float ballAngle = 0;
 
-    struct Paddle {
-    public:
-        sf::RectangleShape rect;
-        float speed;
+int leftScore = 0;
+int rightScore = 0;
+bool Up = false;
+bool Down = false;
 
-        public: void init(sf::Vector2f dimensions, float speed) {
-            rect.setSize(dimensions);
+    // unused. Didn't seem necessary.
+struct Paddle {
+public:
+    sf::RectangleShape rect;
+    float speed;
+
+    public: void init(sf::Vector2f dimensions, float speed) {
+        rect.setSize(dimensions);
             //rect.setFillColor(sf::Color(100, 100, 200));
-            rect.setOrigin(dimensions / 2.f);
-            this->speed = speed;
-        }
-    };
-
-
-    void resetBall(sf::CircleShape &ball) {
-        //sf::sleep(sf::seconds(5));
-        ball.setPosition(windowWidth / 2, windowHeight / 2);
-
-        int flip = 0;
-
-        if(std::rand()%2==1)
-            flip = 180;
-        else
-            flip = 0;
-
-         ballAngle = (flip + (std::rand() % 45) - 45);
-         //ballAngle = 210;
-                    // Reset the ball angle
-        /*do
-        {
-                        // Make sure the ball initial angle is not too much vertical
-            //ballAngle = (std::rand() % 360) * 2 * pi / 360;
-           
-
-        }
-        while (std::abs(std::cos(ballAngle)) < 0.7f);*/
+        rect.setOrigin(dimensions / 2.f);
+        this->speed = speed;
     }
+};
 
-    int main()
-    {
+    // moves ball back to center and sends it in random direction
+void resetBall(sf::CircleShape &ball) {
+        //sf::sleep(sf::seconds(5));
+    ball.setPosition(windowWidth / 2, windowHeight / 2);
 
-        std::srand(std::time(0));
+    int flip = 0;
 
-    // Create the window of the application
-        sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight, 32), "Pong",
-            sf::Style::Titlebar | sf::Style::Close);
-        window.setVerticalSyncEnabled(true);
-        window.setKeyRepeatEnabled(false);
-        window.setFramerateLimit(60);
+    if(std::rand()%2==1)
+        flip = 180;
+    else
+        flip = 0;
 
-    // Load the sounds used in the game
+    ballAngle = (flip + (std::rand() % 45) - 45);
+}
+
+int main()
+{
+
+    std::srand(std::time(0));
+
+   // Load sound and text first
     sf::SoundBuffer sound;
     if (!sound.loadFromFile("../res/ding.wav"))
         return 0;
     sf::Sound ballSound(sound);
 
-    // Create the left paddle
-        sf::RectangleShape leftPaddle;
-        leftPaddle.setSize(paddleSize);
-        leftPaddle.setFillColor(sf::Color(100, 100, 200));
-        leftPaddle.setOrigin(paddleSize / 2.f);
+    if (!font.loadFromFile("../res/ChocolateCoveredRaindrops.ttf"))
+        return 0;
+
+    // Create the window of the application
+    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight, 32), "Pong",
+        sf::Style::Titlebar | sf::Style::Close);
+    window.setVerticalSyncEnabled(true);
+    window.setKeyRepeatEnabled(false);
+    window.setFramerateLimit(60);
+
+    sf::Text score;
+    score.setFont(font);
+    score.setCharacterSize(60);
+    score.setColor(sf::Color::White);
+    score.setString("0 - 0");
+    score.setPosition(windowWidth/2.f, 0);
+    score.setOrigin(score.getLocalBounds().width/2.0f,score.getLocalBounds().height/2.0f);
+
+    sf::Text startText;
+    startText.setFont(font);
+    startText.setCharacterSize(40);
+    startText.setColor(sf::Color::White);
+    startText.setString("Pong!\nPress ENTER to start.\nType 1-3 for Difficulty\nEsc to exit");
+    startText.setPosition(windowWidth/2.f, windowHeight/2.f - 20);
+    startText.setOrigin(startText.getLocalBounds().width/2.0f,startText.getLocalBounds().height/2.0f);
+
+    sf::Text finishText;
+    finishText.setFont(font);
+    finishText.setCharacterSize(40);
+    finishText.setColor(sf::Color::White);
+    finishText.setString("Finished!\nPress ENTER to play again.\nEsc to quit.");
+    finishText.setPosition(windowWidth/2.f, windowHeight/2.f - 20);
+    finishText.setOrigin(finishText.getLocalBounds().width/2.0f,finishText.getLocalBounds().height/2.0f);
+
+        // Left pad
+    sf::RectangleShape leftPaddle;
+    leftPaddle.setSize(paddleSize);
+    leftPaddle.setFillColor(sf::Color::Cyan);
+    leftPaddle.setOrigin(paddleSize / 2.f);
 
         //Paddle leftPad = 
 
-    // Create the right paddle
-        sf::RectangleShape rightPaddle;
-        rightPaddle.setSize(paddleSize);
-        rightPaddle.setFillColor(sf::Color(200, 100, 100));
-        rightPaddle.setOrigin(paddleSize / 2.f);
+        // Right pad
+    sf::RectangleShape rightPaddle;
+    rightPaddle.setSize(paddleSize);
+    rightPaddle.setFillColor(sf::Color::Magenta);
+    rightPaddle.setOrigin(paddleSize / 2.f);
 
-    // Create the ball
-        sf::CircleShape ball;
-        ball.setRadius(ballRadius);
-        ball.setFillColor(sf::Color::White);
-        ball.setOrigin(ballRadius / 2, ballRadius / 2);
+        // ball
+    sf::CircleShape ball;
+    ball.setRadius(ballRadius);
+    ball.setFillColor(sf::Color::White);
+    ball.setOrigin(ballRadius / 2, ballRadius / 2);
 
-    // Load the text font
-        if (!font.loadFromFile("../res/ChocolateCoveredRaindrops.ttf"))
-            return 0;
-
-        sf::Text score;
-        score.setFont(font);
-        score.setCharacterSize(60);
-        score.setColor(sf::Color::White);
-        score.setString("0 - 0");
-        score.setPosition(windowWidth/2.f, 0);
-        score.setOrigin(score.getLocalBounds().width/2.0f,score.getLocalBounds().height/2.0f);
-
-        sf::Text startText;
-        startText.setFont(font);
-        startText.setCharacterSize(40);
-        startText.setColor(sf::Color::White);
-        startText.setString("Pong! ENTER to start.");
-        startText.setPosition(windowWidth/2.f, windowHeight/2.f - 20);
-        startText.setOrigin(startText.getLocalBounds().width/2.0f,startText.getLocalBounds().height/2.0f);
-
-        sf::Text finishText;
-        finishText.setFont(font);
-        finishText.setCharacterSize(40);
-        finishText.setColor(sf::Color::White);
-        finishText.setString("Finished! ENTER to play again.");
-        finishText.setPosition(windowWidth/2.f, windowHeight/2.f - 20);
-        finishText.setOrigin(finishText.getLocalBounds().width/2.0f,finishText.getLocalBounds().height/2.0f);
-
-    // Define the paddles properties
-        sf::Clock AITimer;
+        // Difficulty Button
+    sf::RectangleShape difficultyRect(sf::Vector2f(50, 50));
+    difficultyRect.setFillColor(sf::Color::White);
+    sf::Text difficultyText;
+    difficultyText.setFont(font);
+    difficultyText.setCharacterSize(50);
+    difficultyText.setColor(sf::Color::Black);
+    difficultyText.setString("2");
+    difficultyText.setPosition(windowWidth/1.5f + 15, windowHeight/1.5f - 12);
+    difficultyRect.setPosition(windowWidth/1.5f, windowHeight/1.5f);
 
 
-        sf::Clock clock;
-    //bool isPlaying = false;
-        mode = start;
-        int leftScore = 0;
-        int rightScore = 0;
-        bool Up = false;
-        bool Down = false;
-
-
-        while (window.isOpen())
-        {
+    while (window.isOpen())
+    {
         // Handle events
-            sf::Event event;
-            while (window.pollEvent(event))
-            {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
 
-              switch (event.type) {
+          switch (event.type) {
 
-                case sf::Event::Closed:
+            case sf::Event::Closed:
                 window.close();
+                break;
 
-                case sf::Event::KeyPressed:
+            case sf::Event::KeyPressed:
             // Window closed or escape key pressed: exit
-                if(event.key.code == sf::Keyboard::Escape)
-                {
-                 window.close();
-                 break;
-             }
+            if(event.key.code == sf::Keyboard::Escape)
+            {
+             window.close();
+             break;
+         }
 
-            // Space key pressed: play
-             else if ((event.key.code == sf::Keyboard::Return))
-             {
+            // Hitting Enter Starts the Game
+         else if ((event.key.code == sf::Keyboard::Return))
+         {
+            if(mode == start)
+            {
+                mode = playing;
 
-                if(mode == start || mode == finish)
-                {
-                    // (re)start the game
-                    //isPlaying = true;
-                    mode = playing;
-                    clock.restart();
+                    //reset score
+                leftScore = 0;
+                rightScore = 0;
+                score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
 
-                    leftScore = 0;
-                    rightScore = 0;
-                    score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
+                    // Reset shapes
+                leftPaddle.setPosition(paddleSize.x, windowHeight / 2);
+                rightPaddle.setPosition(windowWidth - paddleSize.x, windowHeight / 2);
+                resetBall(ball);
 
-                    // Reset the position of the paddles and ball
-                    leftPaddle.setPosition(paddleSize.x, windowHeight / 2);
-                    rightPaddle.setPosition(windowWidth - paddleSize.x, windowHeight / 2);
-               /* ball.setPosition(windowWidth / 2, windowHeight / 2);
-
-                    // Reset the ball angle
-                do
-                {
-                        // Make sure the ball initial angle is not too much vertical
-                    ballAngle = (std::rand() % 360) * 2 * pi / 360;
-                }
-                while (std::abs(std::cos(ballAngle)) < 0.7f);*/
-                    resetBall(ball);
-                }
+                ballSpeed = std::stof((std::string) difficultyText.getString()) * 4;
             }
+            if(mode == finish)
+                mode = start;
+        }
 
-            else if (event.key.code == Keyboard::Up) {
-                Up = true;
-                break;
-            }
-
-            else if (event.key.code == Keyboard::Down) {
-                Down = true;
-                break;
-            }
-
-
-            case sf::Event::KeyReleased:
-            if (event.key.code == Keyboard::Up)
-                Up = false;
-
-            else if (event.key.code == Keyboard::Down)
-                Down = false;
-
+        else if (event.key.code == Keyboard::Up) {
+            Up = true;
             break;
         }
+
+        else if (event.key.code == Keyboard::Down) {
+            Down = true;
+            break;
+        }
+
+        case sf::Event::KeyReleased:
+        if (event.key.code == Keyboard::Up)
+            Up = false;
+
+        else if (event.key.code == Keyboard::Down)
+            Down = false;
+
+        break;
+    }
+}
+
+if(mode == start) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+    {
+        difficultyText.setString("1");
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+    {
+        difficultyText.setString("2");
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
+    {
+        difficultyText.setString("3");
+    }
+}
+
+if (mode == playing)
+{
+    // Player's paddle responses
+    if (Up == true &&
+       (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
+    {
+        leftPaddle.move(0.f, -paddleSpeed);
+    }
+    if (Down == true &&
+       (leftPaddle.getPosition().y + paddleSize.y / 2 < windowHeight - 5.f))
+    {
+        leftPaddle.move(0.f, paddleSpeed);
     }
 
-        /*if(mode == start) {
-            startText.setString("Welcome to pong!\nPress space to start the game");
-            startText.setPosition(windowWidth/2.f, windowHeight/2.f -20);
-            startText.setOrigin(startText.getLocalBounds().width/2.0f,startText.getLocalBounds().height/2.0f);
-        }
-
-        if(mode == finish) {
-            finishText.setString("Defeat");
-            finishText.setPosition(windowWidth/2.f, windowHeight/2.f - 20);
-            finishText.setOrigin(finishText.getLocalBounds().width/2.0f,finishText.getLocalBounds().height/2.0f);
-
-            }*/
-
-    if (mode == playing)
+    // Move AI paddle
+    if ((rightPaddle.getPosition().y - paddleSize.y / 2 > 5.f) && (ball.getPosition().y + (std::rand() % 10 - 20) - ballRadius < rightPaddle.getPosition().y - paddleSize.y / 2))
     {
-            //float deltaTime = clock.restart().asSeconds();
+        rightPaddle.move(0.f, -paddleSpeed/2);
+    }
+    else if((rightPaddle.getPosition().y + paddleSize.y / 2 < windowHeight - 5.f) && (ball.getPosition().y + (std::rand() % 10 - 20) + ballRadius > rightPaddle.getPosition().y + paddleSize.y / 2))
+        rightPaddle.move(0.f, paddleSpeed/2);
 
-            // Move the player's paddle
-        if (Up == true &&
-           (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
-        {
-                leftPaddle.move(0.f, -paddleSpeed);
-        }
-        if (Down == true &&
-           (leftPaddle.getPosition().y + paddleSize.y / 2 < windowHeight - 5.f))
-        {
-                leftPaddle.move(0.f, paddleSpeed);
-        }
+    // Move ball
+    ball.move(std::cos(ballAngle * 3.14159f/180) * ballSpeed, std::sin(ballAngle * 3.14159f/180) * ballSpeed);
 
-            // Move the computer's paddle
-        if (((rightPaddleSpeed < 0.f) && (rightPaddle.getPosition().y - paddleSize.y / 2 > 5.f)) ||
-            ((rightPaddleSpeed > 0.f) && (rightPaddle.getPosition().y + paddleSize.y / 2 < windowHeight - 5.f)))
-        {
-                rightPaddle.move(0.f, rightPaddleSpeed);
-        }
+    // If point is scored
+    if (ball.getPosition().x - ballRadius < 0.f)
+    {
+        resetBall(ball);
+        rightScore++;
+        score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
 
-            // Update the computer's paddle direction according to the ball position
-        if (AITimer.getElapsedTime() > AITime)
-        {
-            AITimer.restart();
-            if (ball.getPosition().y + ballRadius > rightPaddle.getPosition().y + paddleSize.y / 2)
-                rightPaddleSpeed = paddleSpeed;
-            else if (ball.getPosition().y - ballRadius < rightPaddle.getPosition().y - paddleSize.y / 2)
-                rightPaddleSpeed = -paddleSpeed;
-            else
-                rightPaddleSpeed = 0.f;
-        }
+        if(rightScore > 1) {
+            mode = finish;
+            finishText.setString("Computer Wins!\nPress ENTER to play again.\nEsc to quit.");
 
-            // Move the ball
-        ball.move(std::cos(ballAngle * pi/180) * ballSpeed, std::sin(ballAngle * pi/180) * ballSpeed);
-
-        if (ball.getPosition().x - ballRadius < 0.f)
-        {
-            resetBall(ball);
-            rightScore++;
-            score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
-
-            if(rightScore > 1)
-                mode = finish;
-        }
-
-        if (ball.getPosition().x + ballRadius > windowWidth)
-        {
-            resetBall(ball);
-            leftScore++;
-            score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
-            if(leftScore > 1)
-                mode = finish;
-
-        }
-        if (ball.getPosition().y - ballRadius < 0.f)
-        {
-                ballSound.play();
-            ballAngle = -ballAngle;
-            //ball.setPosition(ball.getPosition().x, ballRadius + 0.1f);
-        }
-        if (ball.getPosition().y + ballRadius > windowHeight)
-        {
-                ballSound.play();
-            ballAngle = -ballAngle;
-            //ball.setPosition(ball.getPosition().x, windowHeight - ballRadius - 0.1f);
-        }
-
-        if(ball.getGlobalBounds().intersects(leftPaddle.getGlobalBounds()))
-        {
-            ballAngle = 180 - ballAngle - 10 + std::rand() % 10;
-            //ballAngle = 180 -ballAngle - 10.f + std::rand() % 10;
-            /*if (ball.getPosition().y > leftPaddle.getPosition().y)
-                ballAngle = pi - ballAngle + (std::rand() % 20) * pi / 180;
-                
-            else
-                ballAngle = pi - ballAngle - (std::rand() % 20) * pi / 180;*/
-
-                ballSound.play();
-            ball.setPosition(leftPaddle.getPosition().x + ballRadius + paddleSize.x / 2 + 0.1f, ball.getPosition().y);
-        }
-
-            // Right Paddle
-        if(ball.getGlobalBounds().intersects(rightPaddle.getGlobalBounds()))
-        {
-            ballAngle = 180 - ballAngle - 10 + std::rand() % 10;
-        /*
-            if (ball.getPosition().y > rightPaddle.getPosition().y)
-                ballAngle = pi - ballAngle + (std::rand() % 20) * pi / 180;
-            else
-                ballAngle = pi - ballAngle - (std::rand() % 20) * pi / 180;*/
-
-                ballSound.play();
-            ball.setPosition(rightPaddle.getPosition().x - ballRadius - paddleSize.x / 2 - 0.1f, ball.getPosition().y);
         }
     }
 
-        // Clear the window
-        window.clear(/*sf::Color(50, 200, 50)*/);
+    if (ball.getPosition().x + ballRadius > windowWidth)
+    {
+        resetBall(ball);
+        leftScore++;
+        score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
+        if(leftScore > 1) {
+            mode = finish;
+            finishText.setString("Player Wins!\nPress ENTER to play again.\nEsc to quit.");
+        }
 
-    if (mode == playing)
-    {
-            // Draw the paddles and the ball
-        window.draw(leftPaddle);
-        window.draw(rightPaddle);
-        window.draw(ball);
-        window.draw(score);
-    }
-    else if(mode == start)
-    {
-        window.draw(startText);
     }
 
-    else if(mode == finish)
+    // If ball hits top or bottom wall
+    if (ball.getPosition().y - ballRadius < 0.f || (ball.getPosition().y + ballRadius > windowHeight))
     {
-        window.draw(leftPaddle);
-        window.draw(rightPaddle);
+        ballSound.play();
+        ballAngle = -ballAngle;
+    }
+
+    if(ball.getGlobalBounds().intersects(leftPaddle.getGlobalBounds()) || ball.getGlobalBounds().intersects(rightPaddle.getGlobalBounds()))
+    {
+        ballAngle = 180 - ballAngle - 15 + std::rand() % 30;
+        ballSound.play();
+    }
+
+}
+
+window.clear();
+
+if(mode == start)
+{
+    window.draw(startText);
+    window.draw(difficultyRect);
+    window.draw(difficultyText);
+}
+else if (mode == playing)
+{
+    window.draw(leftPaddle);
+    window.draw(rightPaddle);
+    window.draw(ball);
+    window.draw(score);
+}
+
+else if(mode == finish)
+{
+    window.draw(leftPaddle);
+    window.draw(rightPaddle);
         //window.draw(ball);
-        window.draw(score);
-        window.draw(finishText);
-    }
+    window.draw(score);
+    window.draw(finishText);
+}
 
-    window.display();
+window.display();
 }
 
 return 0;
