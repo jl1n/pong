@@ -23,7 +23,7 @@ const sf::Time AITime   = sf::seconds(0.4f);
 const float paddleSpeed = 10.f;
 float rightPaddleSpeed  = 0.f;
 const float ballSpeed   = 8.f;
-    float ballAngle         = 0.f; // to be changed later
+    float ballAngle     = 0; // to be changed later
 
     struct Paddle {
     public:
@@ -76,10 +76,10 @@ const float ballSpeed   = 8.f;
         window.setFramerateLimit(60);
 
     // Load the sounds used in the game
-    /*sf::SoundBuffer ballSoundBuffer;
-    if (!ballSoundBuffer.loadFromFile("resources/ball.wav"))
-        return EXIT_FAILURE;
-    sf::Sound ballSound(ballSoundBuffer);*/
+    sf::SoundBuffer sound;
+    if (!sound.loadFromFile("../res/ding.wav"))
+        return 0;
+    sf::Sound ballSound(sound);
 
     // Create the left paddle
         sf::RectangleShape leftPaddle;
@@ -264,37 +264,20 @@ const float ballSpeed   = 8.f;
         }
 
             // Move the ball
-            float factor = ballSpeed /** deltaTime*/;
-        ball.move(std::cos(ballAngle * pi/180) * factor, std::sin(ballAngle * pi/180) * factor);
+        ball.move(std::cos(ballAngle * pi/180) * ballSpeed, std::sin(ballAngle * pi/180) * ballSpeed);
 
-            // Check collisions between the ball and the screen
         if (ball.getPosition().x - ballRadius < 0.f)
         {
-                //isPlaying = false;
-                //mode = start;
-                //startText.setString("You lost!\nPress space to restart or\nescape to exit");
             resetBall(ball);
             rightScore++;
             score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
 
             if(rightScore > 1)
                 mode = finish;
-
         }
 
-    // Player scores
         if (ball.getPosition().x + ballRadius > windowWidth)
         {
-                //isPlaying = false;
-                //mode = start;
-                //startText.setString("You won!\nPress space to restart or\nescape to exit");
-        /*ball.setPosition(windowWidth/2.f - ballRadius, windowHeight/2.f - ballRadius);
-        do
-        {
-                        // Make sure the ball initial angle is not too much vertical
-            ballAngle = (std::rand() % 360) * 2 * pi / 360;
-        }
-        while (std::abs(std::cos(ballAngle)) < 0.7f);*/
             resetBall(ball);
             leftScore++;
             score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
@@ -304,13 +287,13 @@ const float ballSpeed   = 8.f;
         }
         if (ball.getPosition().y - ballRadius < 0.f)
         {
-                //ballSound.play();
+                ballSound.play();
             ballAngle = -ballAngle;
             //ball.setPosition(ball.getPosition().x, ballRadius + 0.1f);
         }
         if (ball.getPosition().y + ballRadius > windowHeight)
         {
-                //ballSound.play();
+                ballSound.play();
             ballAngle = -ballAngle;
             //ball.setPosition(ball.getPosition().x, windowHeight - ballRadius - 0.1f);
         }
@@ -325,7 +308,7 @@ const float ballSpeed   = 8.f;
             else
                 ballAngle = pi - ballAngle - (std::rand() % 20) * pi / 180;*/
 
-                //ballSound.play();
+                ballSound.play();
             ball.setPosition(leftPaddle.getPosition().x + ballRadius + paddleSize.x / 2 + 0.1f, ball.getPosition().y);
         }
 
@@ -339,7 +322,7 @@ const float ballSpeed   = 8.f;
             else
                 ballAngle = pi - ballAngle - (std::rand() % 20) * pi / 180;*/
 
-                //ballSound.play();
+                ballSound.play();
             ball.setPosition(rightPaddle.getPosition().x - ballRadius - paddleSize.x / 2 - 0.1f, ball.getPosition().y);
         }
     }
