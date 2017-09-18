@@ -16,7 +16,7 @@ using namespace std;
 
 int main()
 {
-    std::srand(static_cast<unsigned int>(std::time(NULL)));
+    std::srand(std::time(0));
 
     // Define some constants
     const float pi = 3.14159f;
@@ -26,6 +26,7 @@ int main()
     float ballRadius = 10.f;
     enum Mode { start, playing, finish };
     Mode mode = start;
+    sf::Font font;
 
     // Create the window of the application
     sf::RenderWindow window(sf::VideoMode(gameWidth, gameHeight, 32), "Pong",
@@ -40,32 +41,26 @@ int main()
 
     // Create the left paddle
     sf::RectangleShape leftPaddle;
-    leftPaddle.setSize(paddleSize - sf::Vector2f(3, 3));
-    leftPaddle.setOutlineThickness(3);
-    //leftPaddle.setOutlineColor(sf::Color::Green);
+    leftPaddle.setSize(paddleSize);
     leftPaddle.setFillColor(sf::Color(100, 100, 200));
     leftPaddle.setOrigin(paddleSize / 2.f);
 
     // Create the right paddle
     sf::RectangleShape rightPaddle;
-    rightPaddle.setSize(paddleSize - sf::Vector2f(3, 3));
-    rightPaddle.setOutlineThickness(3);
-    //rightPaddle.setOutlineColor(sf::Color::Black);
+    rightPaddle.setSize(paddleSize);
     rightPaddle.setFillColor(sf::Color(200, 100, 100));
     rightPaddle.setOrigin(paddleSize / 2.f);
 
     // Create the ball
     sf::CircleShape ball;
-    ball.setRadius(ballRadius - 3);
-    ball.setOutlineThickness(3);
-    ball.setOutlineColor(sf::Color::Black);
+    ball.setRadius(ballRadius);
     ball.setFillColor(sf::Color::White);
     ball.setOrigin(ballRadius / 2, ballRadius / 2);
 
     // Load the text font
-    sf::Font font;
+    
     if (!font.loadFromFile("../res/ChocolateCoveredRaindrops.ttf"))
-        return EXIT_FAILURE;
+        return 0;
 
     // Initialize the pause message
     sf::Text startMessage;
@@ -76,7 +71,7 @@ int main()
     startMessage.setPosition(gameWidth/2.f, gameHeight/2.f);
     startMessage.setOrigin(startMessage.getLocalBounds().width/2.0f,startMessage.getLocalBounds().height/2.0f);
 
-     sf::Text score;
+    sf::Text score;
     score.setFont(font);
     score.setCharacterSize(60);
     score.setColor(sf::Color::White);
@@ -190,6 +185,9 @@ int main()
                 startMessage.setString("You lost!\nPress space to restart or\nescape to exit");
                 ball.setPosition(gameWidth/2.f - ballRadius, gameHeight/2.f - ballRadius);
                 ballAngle = (std::rand() % 60) + 60;
+                rightScore++;
+                score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
+
             }
             if (ball.getPosition().x + ballRadius > gameWidth)
             {
@@ -198,6 +196,9 @@ int main()
                 startMessage.setString("You won!\nPress space to restart or\nescape to exit");
                 ball.setPosition(gameWidth/2.f - ballRadius, gameHeight/2.f - ballRadius);
                 ballAngle = std::rand() % 60 + 60;
+                leftScore++;
+                score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
+
             }
             if (ball.getPosition().y - ballRadius < 0.f)
             {
