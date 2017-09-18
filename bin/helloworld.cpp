@@ -23,7 +23,7 @@ int main()
     const int gameWidth = 800;
     const int gameHeight = 600;
     sf::Vector2f paddleSize(25, 100);
-    float ballRadius = 10.f;
+    float ballRadius = 8.f;
     enum Mode { start, playing, finish };
     Mode mode = start;
     sf::Font font;
@@ -32,6 +32,8 @@ int main()
     sf::RenderWindow window(sf::VideoMode(gameWidth, gameHeight, 32), "Pong",
         sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
+            window.setKeyRepeatEnabled(false);
+
 
     // Load the sounds used in the game
     /*sf::SoundBuffer ballSoundBuffer;
@@ -57,9 +59,6 @@ int main()
     ball.setFillColor(sf::Color::White);
     ball.setOrigin(ballRadius / 2, ballRadius / 2);
 
-    sf::RectangleShape line(sf::Vector2f(150, 3));
-    line.setPosition(gameWidth/2.f, 0);
-
     // Load the text font
     if (!font.loadFromFile("../res/ChocolateCoveredRaindrops.ttf"))
         return 0;
@@ -76,7 +75,7 @@ int main()
     startText.setFont(font);
     startText.setCharacterSize(40);
     startText.setColor(sf::Color::White);
-    startText.setString("Welcome to pong!\nPress space to start the game");
+    startText.setString("Pong! ENTER to start.");
     startText.setPosition(gameWidth/2.f, gameHeight/2.f - 20);
     startText.setOrigin(startText.getLocalBounds().width/2.0f,startText.getLocalBounds().height/2.0f);
 
@@ -84,16 +83,16 @@ int main()
     finishText.setFont(font);
     finishText.setCharacterSize(40);
     finishText.setColor(sf::Color::White);
-    finishText.setString("Finished");
+    finishText.setString("Finished! ENTER to play again.");
     finishText.setPosition(gameWidth/2.f, gameHeight/2.f - 20);
     finishText.setOrigin(finishText.getLocalBounds().width/2.0f,finishText.getLocalBounds().height/2.0f);
 
     // Define the paddles properties
     sf::Clock AITimer;
     const sf::Time AITime   = sf::seconds(0.4f);
-    const float paddleSpeed = 400.f;
+    const float paddleSpeed = 500.f;
     float rightPaddleSpeed  = 0.f;
-    const float ballSpeed   = 400.f;
+    const float ballSpeed   = 500.f;
     float ballAngle         = 0.f; // to be changed later
 
     sf::Clock clock;
@@ -113,17 +112,17 @@ int main()
         {
             // Window closed or escape key pressed: exit
             if ((event.type == sf::Event::Closed) ||
-               (/*(event.type == sf::Event::KeyPressed) && */(event.key.code == sf::Keyboard::Escape)))
+               ((event.key.code == sf::Keyboard::Escape)))
             {
                 window.close();
                 break;
             }
 
             // Space key pressed: play
-            if (/*(event.type == sf::Event::KeyPressed) &&*/ (mode!=playing) && (event.key.code == sf::Keyboard::Space))
+            else if ((event.key.code == sf::Keyboard::Return))
             {
 
-                if(mode == start)
+                if(mode == start || mode == finish)
                 {
                     // (re)start the game
                     //isPlaying = true;
@@ -132,6 +131,7 @@ int main()
 
                     leftScore = 0;
                     rightScore = 0;
+                    score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
 
                     // Reset the position of the paddles and ball
                     leftPaddle.setPosition(paddleSize.x, gameHeight / 2);
@@ -146,11 +146,9 @@ int main()
                     }
                     while (std::abs(std::cos(ballAngle)) < 0.7f);
                 }
-
-                if(mode == finish) {
-                    mode = start;
-                }
             }
+
+
         }
 
         /*if(mode == start) {
@@ -171,12 +169,12 @@ int main()
             float deltaTime = clock.restart().asSeconds();
 
             // Move the player's paddle
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) &&
+            if (Keyboard::isKeyPressed(sf::Keyboard::Up) &&
                (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
             {
                 leftPaddle.move(0.f, -paddleSpeed * deltaTime);
             }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) &&
+            if (Keyboard::isKeyPressed(sf::Keyboard::Down) &&
                (leftPaddle.getPosition().y + paddleSize.y / 2 < gameHeight - 5.f))
             {
                 leftPaddle.move(0.f, paddleSpeed * deltaTime);
@@ -212,11 +210,16 @@ int main()
                 //mode = start;
                 //startText.setString("You lost!\nPress space to restart or\nescape to exit");
                 ball.setPosition(gameWidth/2.f - ballRadius, gameHeight/2.f - ballRadius);
-                ballAngle = (std::rand() % 60) + 60;
+                do
+                    {
+                        // Make sure the ball initial angle is not too much vertical
+                        ballAngle = (std::rand() % 360) * 2 * pi / 360;
+                    }
+                    while (std::abs(std::cos(ballAngle)) < 0.7f);
                 rightScore++;
                 score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
 
-                if(leftScore > 1)
+                if(rightScore > 1)
                     mode = finish;
 
             }
@@ -226,10 +229,15 @@ int main()
                 //mode = start;
                 //startText.setString("You won!\nPress space to restart or\nescape to exit");
                 ball.setPosition(gameWidth/2.f - ballRadius, gameHeight/2.f - ballRadius);
-                ballAngle = std::rand() % 60 + 60;
+                do
+                    {
+                        // Make sure the ball initial angle is not too much vertical
+                        ballAngle = (std::rand() % 360) * 2 * pi / 360;
+                    }
+                    while (std::abs(std::cos(ballAngle)) < 0.7f);
                 leftScore++;
                 score.setString( std::to_string(leftScore) + " - " +  std::to_string(rightScore));
-                if(rightScore > 1)
+                if(leftScore > 1)
                     mode = finish;
 
             }
